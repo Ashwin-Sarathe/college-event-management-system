@@ -23,6 +23,7 @@ public class SecurityConfig {
                         auth -> auth
                                 .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/events/**").permitAll()
+                                .requestMatchers("/registrations/**").permitAll()
                                 .anyRequest().authenticated()
                 );
         return http.build();
