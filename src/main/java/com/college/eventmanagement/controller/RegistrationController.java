@@ -40,4 +40,10 @@ public class RegistrationController {
         List<RegistrationResponseDTO> registrationResponseDTOS = registrationService.findRegistrationByUserId(userId);
         return new ResponseEntity<>(registrationResponseDTOS,HttpStatus.OK);
     }
+
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<List<RegistrationResponseDTO>> getRegistrationByEventId(@PathVariable String eventId){
+        List<RegistrationResponseDTO> registrationResponseDTOS = registrationService.findRegistrationByEventId(eventId);
+        return new ResponseEntity<>(registrationResponseDTOS, HttpStatus.OK);
+    }
 }

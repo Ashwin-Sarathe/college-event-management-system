@@ -92,4 +92,15 @@ public class RegistrationService {
         }
         return registrationResponseDTOS;
     }
+
+    public List<RegistrationResponseDTO> findRegistrationByEventId(String eventId){
+        eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+        List<Registration> registrations = registrationRepository.findByEventId(eventId);
+        List<RegistrationResponseDTO> registrationResponseDTOS = new ArrayList<>();
+        for (Registration r : registrations){
+            registrationResponseDTOS.add(mapToRegResponse(r));
+
+        }
+        return registrationResponseDTOS;
+    }
 }
