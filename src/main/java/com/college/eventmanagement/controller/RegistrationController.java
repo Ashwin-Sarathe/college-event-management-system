@@ -2,15 +2,15 @@ package com.college.eventmanagement.controller;
 
 import com.college.eventmanagement.dto.RegistrationRequestDTO;
 import com.college.eventmanagement.dto.RegistrationResponseDTO;
+import com.college.eventmanagement.repository.RegistrationRepository;
 import com.college.eventmanagement.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/registrations")
@@ -24,5 +24,20 @@ public class RegistrationController {
         RegistrationResponseDTO registrationResponseDTO = registrationService.registerForEvent(registrationRequestDTO);
 
         return new ResponseEntity<>(registrationResponseDTO, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{registrationId}/cancel")
+    public ResponseEntity<RegistrationResponseDTO> cancelRegistration(@PathVariable String registrationId){
+
+        RegistrationResponseDTO registrationResponseDTO = registrationService.cancelRegistration(registrationId);
+
+        return new ResponseEntity<>(registrationResponseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<RegistrationResponseDTO>> getRegistrationByUserId(@PathVariable String userId){
+
+        List<RegistrationResponseDTO> registrationResponseDTOS = registrationService.findRegistrationByUserId(userId);
+        return new ResponseEntity<>(registrationResponseDTOS,HttpStatus.OK);
     }
 }

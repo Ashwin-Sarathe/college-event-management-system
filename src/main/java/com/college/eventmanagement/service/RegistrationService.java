@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -68,5 +70,26 @@ public class RegistrationService {
         registrationResponseDTO.setRegisteredAt(savedRegistration.getRegisteredAt());
 
         return registrationResponseDTO;
+    }
+
+    public RegistrationResponseDTO cancelRegistration(String regId){
+        Registration registration = registrationRepository.findById(regId).orElseThrow(() -> new RuntimeException("Registration not found"));
+
+        if(registration.getStatus() == RegistrationStatus.CANCELLED)
+            throw new RuntimeException("Registration already cancelled");
+
+        registration.setStatus(RegistrationStatus.CANCELLED);
+        Registration saved = registrationRepository.save(registration);
+        return mapToRegResponse(saved);
+    }
+
+    public List<RegistrationResponseDTO> findRegistrationByUserId(String userId){
+        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Registration> registrations = registrationRepository.findByUserId(userId);
+        List<RegistrationResponseDTO> registrationResponseDTOS = new ArrayList<>();
+        for (Registration r : registrations){
+            registrationResponseDTOS.add(mapToRegResponse(r));
+        }
+        return registrationResponseDTOS;
     }
 }
