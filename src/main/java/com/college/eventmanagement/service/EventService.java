@@ -2,6 +2,8 @@ package com.college.eventmanagement.service;
 
 import com.college.eventmanagement.dto.EventRequestDTO;
 import com.college.eventmanagement.dto.EventResponseDTO;
+import com.college.eventmanagement.exception.ConflictException;
+import com.college.eventmanagement.exception.ResourceNotFoundException;
 import com.college.eventmanagement.model.Event;
 import com.college.eventmanagement.model.Role;
 import com.college.eventmanagement.model.User;
@@ -27,18 +29,16 @@ public class EventService {
     public EventResponseDTO createEvent(EventRequestDTO eventRequest){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User admin = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
-
-        if(admin.getRole() != Role.ADMIN) throw new RuntimeException("Only Admins can create events");
+        User admin = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Optional<Event> optionalEvent= eventRepository.findByTitleAndEventDateAndEventTimeAndVenue
                 (
-                eventRequest.getTitle(),
-                eventRequest.getEventDate(),
-                eventRequest.getEventTime(),
-                eventRequest.getVenue()
-        );
-        if(optionalEvent.isPresent()) throw new RuntimeException("Event Already Exists!!");
+                        eventRequest.getTitle(),
+                        eventRequest.getEventDate(),
+                        eventRequest.getEventTime(),
+                        eventRequest.getVenue()
+                );
+        if(optionalEvent.isPresent()) throw new ConflictException("Event Already Exists!!");
         else {
             Event newEvent = new Event();
             newEvent.setTitle(eventRequest.getTitle());
@@ -48,6 +48,7 @@ public class EventService {
             newEvent.setVenue(eventRequest.getVenue());
             newEvent.setMaxParticipants(eventRequest.getMaxParticipants());
             newEvent.setCreatedBy(admin.getId());
+            newEvent.setCurrentParticipants(0);
             newEvent.setCreatedAt(LocalDateTime.now());
 
             Event savedEvent = eventRepository.save(newEvent);
@@ -82,12 +83,12 @@ public class EventService {
     }
 
     public EventResponseDTO getEventById(String id){
-        Event e = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event Not Found!!"));
+        Event e = eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Event Not Found!!"));
         return mapToResponse(e);
     }
 
     public EventResponseDTO deleteEventById(String id){
-        Event e = eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Event Not Found!"));
+        Event e = eventRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Event Not Found!"));
         eventRepository.deleteById(id);
         return mapToResponse(e);
     }

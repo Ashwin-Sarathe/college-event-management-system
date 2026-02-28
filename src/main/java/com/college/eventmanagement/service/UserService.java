@@ -1,6 +1,7 @@
 package com.college.eventmanagement.service;
 
 import com.college.eventmanagement.dto.RegisterRequestDTO;
+import com.college.eventmanagement.exception.ConflictException;
 import com.college.eventmanagement.model.Role;
 import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.UserRepository;
@@ -25,11 +26,11 @@ public class UserService {
         //created GlobalException class to handle runtime exception
         String username = request.getUsername();
         if(userRepository.existsByUsername(username)){
-            throw new RuntimeException("Username Already Exists!!");
+            throw new ConflictException("Username Already Exists!!");
         }
         String email = request.getEmail();
         if(userRepository.existsByEmail(email)){
-            throw new RuntimeException("Email Already Exists!!");
+            throw new ConflictException("Email Already Exists!!");
         }
 
         //convert request dto to user

@@ -30,6 +30,8 @@ public class Event {
 
     private Integer maxParticipants;
 
+    private Integer currentParticipants;
+
     private String createdBy;
 
     private LocalDateTime createdAt;

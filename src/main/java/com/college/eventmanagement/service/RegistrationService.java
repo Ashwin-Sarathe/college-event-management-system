@@ -2,6 +2,8 @@ package com.college.eventmanagement.service;
 
 import com.college.eventmanagement.dto.RegistrationRequestDTO;
 import com.college.eventmanagement.dto.RegistrationResponseDTO;
+import com.college.eventmanagement.exception.ConflictException;
+import com.college.eventmanagement.exception.ResourceNotFoundException;
 import com.college.eventmanagement.model.Event;
 import com.college.eventmanagement.model.Registration;
 import com.college.eventmanagement.model.RegistrationStatus;
@@ -10,6 +12,11 @@ import com.college.eventmanagement.repository.EventRepository;
 import com.college.eventmanagement.repository.RegistrationRepository;
 import com.college.eventmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,15 +35,19 @@ public class RegistrationService {
     private EventRepository eventRepository;
     @Autowired
     private RegistrationRepository registrationRepository;
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     public RegistrationResponseDTO registerForEvent(RegistrationRequestDTO registrationRequestDTO){
 
+
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User Not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User Not found"));
         String userId = user.getId();
         String eventId = registrationRequestDTO.getEventId();
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event Not found"));
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new ResourceNotFoundException("Event Not found"));
 
         Optional<Registration> existingRegistration = registrationRepository.findByUserIdAndEventId(userId,eventId);
 
@@ -44,14 +55,27 @@ public class RegistrationService {
         if(existingRegistration.isPresent()){
             RegistrationStatus status = existingRegistration.get().getStatus();
             if(status == RegistrationStatus.REGISTERED)
-                throw new RuntimeException("User Already Registered for this event!!");
+                throw new ConflictException("User Already Registered for this event!!");
         }
 
         //capacity check
-        long currentCapacity = registrationRepository.countByEventIdAndStatus(eventId, RegistrationStatus.REGISTERED);
-        long maxParticipants = event.getMaxParticipants();
-        if(currentCapacity >= maxParticipants){
-            throw new RuntimeException("Event is full");
+        Query query = new Query();
+        query.addCriteria(
+                Criteria.where("_id").is(event.getId())
+                        .and("currentParticipants").lt(event.getMaxParticipants())
+        );
+
+        Update update = new Update().inc("currentParticipants", 1);
+
+        Event updatedEvent = mongoTemplate.findAndModify(
+                query,
+                update,
+                FindAndModifyOptions.options().returnNew(true),
+                Event.class
+        );
+
+        if (updatedEvent == null) {
+            throw new ConflictException("Event is full");
         }
 
         Registration savedRegistration = new Registration();
@@ -77,10 +101,10 @@ public class RegistrationService {
     }
 
     public RegistrationResponseDTO cancelRegistration(String regId){
-        Registration registration = registrationRepository.findById(regId).orElseThrow(() -> new RuntimeException("Registration not found"));
+        Registration registration = registrationRepository.findById(regId).orElseThrow(() -> new ResourceNotFoundException("Registration not found"));
 
         if(registration.getStatus() == RegistrationStatus.CANCELLED)
-            throw new RuntimeException("Registration already cancelled");
+            throw new ConflictException("Registration already cancelled");
 
         registration.setStatus(RegistrationStatus.CANCELLED);
         Registration saved = registrationRepository.save(registration);
@@ -88,7 +112,7 @@ public class RegistrationService {
     }
 
     public List<RegistrationResponseDTO> findRegistrationByUserId(String userId){
-        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         List<Registration> registrations = registrationRepository.findByUserId(userId);
         List<RegistrationResponseDTO> registrationResponseDTOS = new ArrayList<>();
         for (Registration r : registrations){
@@ -98,7 +122,7 @@ public class RegistrationService {
     }
 
     public List<RegistrationResponseDTO> findRegistrationByEventId(String eventId){
-        eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+        eventRepository.findById(eventId).orElseThrow(() -> new ResourceNotFoundException("Event not found"));
         List<Registration> registrations = registrationRepository.findByEventId(eventId);
         List<RegistrationResponseDTO> registrationResponseDTOS = new ArrayList<>();
         for (Registration r : registrations){
