@@ -32,7 +32,7 @@ public class UserService {
             throw new RuntimeException("Email Already Exists!!");
         }
 
-        //convert request rto to user
+        //convert request dto to user
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());

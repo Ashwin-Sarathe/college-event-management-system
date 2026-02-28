@@ -10,6 +10,8 @@ import com.college.eventmanagement.repository.EventRepository;
 import com.college.eventmanagement.repository.RegistrationRepository;
 import com.college.eventmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,8 +31,10 @@ public class RegistrationService {
 
     public RegistrationResponseDTO registerForEvent(RegistrationRequestDTO registrationRequestDTO){
 
-        String userId = registrationRequestDTO.getUserId();
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User Not found"));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User Not found"));
+        String userId = user.getId();
         String eventId = registrationRequestDTO.getEventId();
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event Not found"));
 

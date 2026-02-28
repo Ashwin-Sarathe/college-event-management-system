@@ -2,7 +2,6 @@ package com.college.eventmanagement.controller;
 
 import com.college.eventmanagement.dto.RegistrationRequestDTO;
 import com.college.eventmanagement.dto.RegistrationResponseDTO;
-import com.college.eventmanagement.repository.RegistrationRepository;
 import com.college.eventmanagement.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

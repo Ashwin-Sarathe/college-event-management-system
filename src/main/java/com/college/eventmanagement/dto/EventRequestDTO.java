@@ -34,7 +34,5 @@ public class EventRequestDTO {
     @NotNull @Positive
     private Integer maxParticipants;
 
-    //TO BE CHANGED LATER
-    @NotBlank
-    private String createdBy;
+
 }

@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegistrationRequestDTO {
 
-    @NotBlank
-    private String userId;
+
 
     @NotBlank
     private String eventId;

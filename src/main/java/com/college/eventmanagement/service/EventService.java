@@ -8,6 +8,7 @@ import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.EventRepository;
 import com.college.eventmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,10 +25,11 @@ public class EventService {
     private UserRepository userRepository;
 
     public EventResponseDTO createEvent(EventRequestDTO eventRequest){
-        String requestId = eventRequest.getCreatedBy();
-        User user = userRepository.findById(requestId).orElseThrow(() -> new RuntimeException("User not found"));
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if(user.getRole() != Role.ADMIN) throw new RuntimeException("Only Admins can create events");
+        User admin = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(admin.getRole() != Role.ADMIN) throw new RuntimeException("Only Admins can create events");
 
         Optional<Event> optionalEvent= eventRepository.findByTitleAndEventDateAndEventTimeAndVenue
                 (
@@ -45,7 +47,7 @@ public class EventService {
             newEvent.setEventTime(eventRequest.getEventTime());
             newEvent.setVenue(eventRequest.getVenue());
             newEvent.setMaxParticipants(eventRequest.getMaxParticipants());
-            newEvent.setCreatedBy(eventRequest.getCreatedBy());
+            newEvent.setCreatedBy(admin.getId());
             newEvent.setCreatedAt(LocalDateTime.now());
 
             Event savedEvent = eventRepository.save(newEvent);
