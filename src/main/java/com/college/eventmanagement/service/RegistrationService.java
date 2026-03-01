@@ -107,6 +107,15 @@ public class RegistrationService {
             throw new ConflictException("Registration already cancelled");
 
         registration.setStatus(RegistrationStatus.CANCELLED);
+        Query query = new Query();
+        query.addCriteria(
+                Criteria.where("_id").is(registration.getEventId())
+        );
+
+        Update update = new Update().inc("currentParticipants", -1);
+
+        mongoTemplate.updateFirst(query, update, Event.class);
+
         Registration saved = registrationRepository.save(registration);
         return mapToRegResponse(saved);
     }

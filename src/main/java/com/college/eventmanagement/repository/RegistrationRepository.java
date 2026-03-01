@@ -16,4 +16,6 @@ public interface RegistrationRepository extends MongoRepository<Registration, St
     List<Registration> findByUserId(String userId);
 
     List<Registration> findByEventId(String eventId);
+
+    long countByStatus(RegistrationStatus status);
 }
