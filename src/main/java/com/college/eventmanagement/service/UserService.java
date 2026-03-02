@@ -1,7 +1,9 @@
 package com.college.eventmanagement.service;
 
 import com.college.eventmanagement.dto.RegisterRequestDTO;
+import com.college.eventmanagement.dto.UserResponseDTO;
 import com.college.eventmanagement.exception.ConflictException;
+import com.college.eventmanagement.exception.ResourceNotFoundException;
 import com.college.eventmanagement.model.Role;
 import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.UserRepository;
@@ -48,5 +50,22 @@ public class UserService {
 
         userRepository.save(user);
 
+    }
+
+    public UserResponseDTO promoteToAdmin(String userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if(user.getRole()==Role.ADMIN){
+            throw new ConflictException("User is already admin");
+        }
+        user.setRole(Role.ADMIN);
+        userRepository.save(user);
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(user.getId());
+        userResponseDTO.setEmail(user.getEmail());
+        userResponseDTO.setRole(user.getRole());
+        userResponseDTO.setUsername(user.getUsername());
+        userResponseDTO.setName(user.getName());
+
+        return userResponseDTO;
     }
 }
