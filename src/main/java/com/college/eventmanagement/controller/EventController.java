@@ -5,6 +5,8 @@ import com.college.eventmanagement.dto.EventResponseDTO;
 import com.college.eventmanagement.service.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +27,8 @@ public class EventController {
     }
 
     @GetMapping("/get-all-events")
-    public ResponseEntity<List<EventResponseDTO>> getAllEvents(){
-        return new ResponseEntity<>(eventService.getAllEvents(),HttpStatus.OK);
+    public ResponseEntity<Page<EventResponseDTO>> getAllEvents(Pageable pageable){
+        return new ResponseEntity<>(eventService.getAllEvents(pageable),HttpStatus.OK);
     }
 
     @GetMapping("/get-event-by-id/{Id}")

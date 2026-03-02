@@ -10,6 +10,8 @@ import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.EventRepository;
 import com.college.eventmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -72,14 +74,16 @@ public class EventService {
         return eventResponse;
     }
 
-    public List<EventResponseDTO> getAllEvents(){
-        List<Event> allEvents = eventRepository.findAll();
-        List<EventResponseDTO> allEventDTO = new ArrayList<>();
-        for(Event e : allEvents){
-            EventResponseDTO eventResponseDTO = mapToResponse(e);
-            allEventDTO.add(eventResponseDTO);
-        }
-        return allEventDTO;
+    public Page<EventResponseDTO> getAllEvents(Pageable pageable){
+        //List<Event> allEvents = eventRepository.findAll();
+        Page<Event> eventsPage = eventRepository.findAll(pageable);
+        return eventsPage.map(this::mapToResponse);
+//        List<EventResponseDTO> allEventDTO = new ArrayList<>();
+//        for(Event e : allEvents){
+//            EventResponseDTO eventResponseDTO = mapToResponse(e);
+//            allEventDTO.add(eventResponseDTO);
+//        }
+        //return allEventDTO;
     }
 
     public EventResponseDTO getEventById(String id){
