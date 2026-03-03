@@ -8,9 +8,14 @@ import com.college.eventmanagement.model.Role;
 import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -58,14 +63,23 @@ public class UserService {
             throw new ConflictException("User is already admin");
         }
         user.setRole(Role.ADMIN);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return mapToResponse(savedUser);
+    }
+
+    private UserResponseDTO mapToResponse(User user){
         UserResponseDTO userResponseDTO = new UserResponseDTO();
         userResponseDTO.setId(user.getId());
         userResponseDTO.setEmail(user.getEmail());
         userResponseDTO.setRole(user.getRole());
         userResponseDTO.setUsername(user.getUsername());
         userResponseDTO.setName(user.getName());
-
         return userResponseDTO;
+    }
+
+    public Page<UserResponseDTO> getAllUsers(int page, int size){
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<User> userPage = userRepository.findAll(pageable);
+        return userPage.map(this::mapToResponse);
     }
 }

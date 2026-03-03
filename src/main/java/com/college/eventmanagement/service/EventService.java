@@ -6,7 +6,6 @@ import com.college.eventmanagement.dto.UpdateEventRequestDTO;
 import com.college.eventmanagement.exception.ConflictException;
 import com.college.eventmanagement.exception.ResourceNotFoundException;
 import com.college.eventmanagement.model.Event;
-import com.college.eventmanagement.model.Role;
 import com.college.eventmanagement.model.User;
 import com.college.eventmanagement.repository.EventRepository;
 import com.college.eventmanagement.repository.UserRepository;
@@ -16,8 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -76,15 +73,8 @@ public class EventService {
     }
 
     public Page<EventResponseDTO> getAllEvents(Pageable pageable){
-        //List<Event> allEvents = eventRepository.findAll();
         Page<Event> eventsPage = eventRepository.findAll(pageable);
         return eventsPage.map(this::mapToResponse);
-//        List<EventResponseDTO> allEventDTO = new ArrayList<>();
-//        for(Event e : allEvents){
-//            EventResponseDTO eventResponseDTO = mapToResponse(e);
-//            allEventDTO.add(eventResponseDTO);
-//        }
-        //return allEventDTO;
     }
 
     public EventResponseDTO getEventById(String id){
@@ -105,9 +95,9 @@ public class EventService {
         }
         event.setTitle(dto.getTitle());
         event.setVenue(dto.getVenue());
-        event.setEventTime(dto.getTime());
+        event.setEventTime(dto.getEventTime());
         event.setDescription(dto.getDescription());
-        event.setEventDate(dto.getDate());
+        event.setEventDate(dto.getEventDate());
         event.setMaxParticipants(dto.getMaxParticipants());
 
         Event updatedEvent = eventRepository.save(event);

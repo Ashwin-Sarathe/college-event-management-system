@@ -20,9 +20,9 @@ public class UpdateEventRequestDTO {
     @NotBlank
     private String description;
     @NotNull
-    private LocalDate date;
+    private LocalDate eventDate;
     @NotNull
-    private LocalTime time;
+    private LocalTime eventTime;
     @NotBlank
     private String venue;
     @NotNull @Positive
